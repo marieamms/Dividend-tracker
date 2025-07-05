@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Dividend Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .instructions {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .download-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .download-btn {
+            background-color: #27ae60;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #219a52;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f0f8ff;
+        }
+        .number {
+            text-align: right;
+        }
+        .date {
+            text-align: center;
+        }
+        .sample-data {
+            font-style: italic;
+            color: #666;
+        }
+        .total-row {
+            background-color: #ecf0f1 !important;
+            font-weight: bold;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .summary-card {
+            background-color: #34495e;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Stock Dividend Tracker</h1>
+        
+        <div class="instructions">
+            <h3>How to Use:</h3>
+            <ol>
+                <li>Click "Download CSV" to get the spreadsheet template</li>
+                <li>Open Google Sheets and go to File → Import → Upload</li>
+                <li>Upload the CSV file and select "Replace spreadsheet"</li>
+                <li>Start entering your dividend data in the rows below the headers</li>
+                <li>The sample data is provided as a guide - replace it with your actual holdings</li>
+            </ol>
+        </div>
+
+        <div class="download-section">
+            <button class="download-btn" onclick="downloadCSV()">📥 Download CSV File</button>
+            <button class="download-btn" onclick="downloadExcel()">📊 Download Excel File</button>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Total Annual Dividends</h3>
+                <div class="value" id="totalAnnual">$0.00</div>
+            </div>
+            <div class="summary-card">
+                <h3>Monthly Average</h3>
+                <div class="value" id="monthlyAvg">$0.00</div>
+            </div>
+            <div class="summary-card">
+                <h3>Total Shares</h3>
+                <div class="value" id="totalShares">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Number of Stocks</h3>
+                <div class="value" id="stockCount">0</div>
+            </div>
+        </div>
+
+        <table id="dividendTable">
+            <thead>
+                <tr>
+                    <th>Stock Symbol</th>
+                    <th>Company Name</th>
+                    <th>Shares Owned</th>
+                    <th>Dividend Per Share</th>
+                    <th>Payment Frequency</th>
+                    <th>Annual Dividend</th>
+                    <th>Last Ex-Date</th>
+                    <th>Next Ex-Date</th>
+                    <th>Next Payment Date</th>
+                    <th>Dividend Yield (%)</th>
+                    <th>Current Stock Price</th>
+                    <th>Total Investment</th>
+                    <th>Sector</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Sample data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Sample dividend data
+        const sampleData = [
+            {
+                symbol: "AAPL",
+                company: "Apple Inc.",
+                shares: 100,
+                dividendPerShare: 0.24,
+                frequency: "Quarterly",
+                annualDividend: 0.96,
+                lastExDate: "2024-11-08",
+                nextExDate: "2025-02-07",
+                nextPaymentDate: "2025-02-14",
+                yield: 0.45,
+                currentPrice: 213.45,
+                totalInvestment: 21345,
+                sector: "Technology",
+                notes: "Consistent dividend growth"
+            },
+            {
+                symbol: "JNJ",
+                company: "Johnson & Johnson",
+                shares: 50,
+                dividendPerShare: 1.19,
+                frequency: "Quarterly",
+                annualDividend: 4.76,
+                lastExDate: "2024-11-25",
+                nextExDate: "2025-02-24",
+                nextPaymentDate: "2025-03-10",
+                yield: 2.85,
+                currentPrice: 166.84,
+                totalInvestment: 8342,
+                sector: "Healthcare",
+                notes: "Dividend King - 62 years of increases"
+            },
+            {
+                symbol: "KO",
+                company: "The Coca-Cola Company",
+                shares: 75,
+                dividendPerShare: 0.485,
+                frequency: "Quarterly",
+                annualDividend: 1.94,
+                lastExDate: "2024-12-13",
+                nextExDate: "2025-03-14",
+                nextPaymentDate: "2025-04-01",
+                yield: 3.12,
+                currentPrice: 62.15,
+                totalInvestment: 4661.25,
+                sector: "Consumer Staples",
+                notes: "Dividend King - 62 years of increases"
+            },
+            {
+                symbol: "MSFT",
+                company: "Microsoft Corporation",
+                shares: 30,
+                dividendPerShare: 0.83,
+                frequency: "Quarterly",
+                annualDividend: 3.32,
+                lastExDate: "2024-11-20",
+                nextExDate: "2025-02-19",
+                nextPaymentDate: "2025-03-13",
+                yield: 0.68,
+                currentPrice: 487.23,
+                totalInvestment: 14616.90,
+                sector: "Technology",
+                notes: "Strong dividend growth"
+            },
+            {
+                symbol: "PG",
+                company: "Procter & Gamble Co.",
+                shares: 40,
+                dividendPerShare: 0.9733,
+                frequency: "Quarterly",
+                annualDividend: 3.8932,
+                lastExDate: "2024-10-18",
+                nextExDate: "2025-01-17",
+                nextPaymentDate: "2025-02-14",
+                yield: 2.32,
+                currentPrice: 167.89,
+                totalInvestment: 6715.60,
+                sector: "Consumer Staples",
+                notes: "Dividend King - 68 years of increases"
+            }
+        ];
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            sampleData.forEach(stock => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${stock.symbol}</td>
+                    <td>${stock.company}</td>
+                    <td class="number">${stock.shares}</td>
+                    <td class="number">$${stock.dividendPerShare.toFixed(2)}</td>
+                    <td>${stock.frequency}</td>
+                    <td class="number">$${stock.annualDividend.toFixed(2)}</td>
+                    <td class="date">${stock.lastExDate}</td>
+                    <td class="date">${stock.nextExDate}</td>
+                    <td class="date">${stock.nextPaymentDate}</td>
+                    <td class="number">${stock.yield.toFixed(2)}%</td>
+                    <td class="number">$${stock.currentPrice.toFixed(2)}</td>
+                    <td class="number">$${stock.totalInvestment.toLocaleString()}</td>
+                    <td>${stock.sector}</td>
+                    <td class="sample-data">${stock.notes}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const totalAnnual = sampleData.reduce((sum, stock) => sum + (stock.annualDividend * stock.shares), 0);
+            const monthlyAvg = totalAnnual / 12;
+            const totalShares = sampleData.reduce((sum, stock) => sum + stock.shares, 0);
+            const stockCount = sampleData.length;
+            
+            document.getElementById('totalAnnual').textContent = `$${totalAnnual.toFixed(2)}`;
+            document.getElementById('monthlyAvg').textContent = `$${monthlyAvg.toFixed(2)}`;
+            document.getElementById('totalShares').textContent = totalShares.toLocaleString();
+            document.getElementById('stockCount').textContent = stockCount;
+        }
+
+        function downloadCSV() {
+            const headers = [
+                'Stock Symbol', 'Company Name', 'Shares Owned', 'Dividend Per Share', 
+                'Payment Frequency', 'Annual Dividend', 'Last Ex-Date', 'Next Ex-Date', 
+                'Next Payment Date', 'Dividend Yield (%)', 'Current Stock Price', 
+                'Total Investment', 'Sector', 'Notes'
+            ];
+            
+            let csvContent = headers.join(',') + '\n';
+            
+            // Add sample data
+            sampleData.forEach(stock => {
+                const row = [
+                    stock.symbol,
+                    `"${stock.company}"`,
+                    stock.shares,
+                    stock.dividendPerShare,
+                    stock.frequency,
+                    stock.annualDividend,
+                    stock.lastExDate,
+                    stock.nextExDate,
+                    stock.nextPaymentDate,
+                    stock.yield,
+                    stock.currentPrice,
+                    stock.totalInvestment,
+                    stock.sector,
+                    `"${stock.notes}"`
+                ];
+                csvContent += row.join(',') + '\n';
+            });
+            
+            // Add empty rows for user input
+            for (let i = 0; i < 20; i++) {
+                csvContent += ',,,,,,,,,,,,,' + '\n';
+            }
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'dividend_tracker.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function downloadExcel() {
+            // Create Excel-compatible CSV with UTF-8 BOM
+            const headers = [
+                'Stock Symbol', 'Company Name', 'Shares Owned', 'Dividend Per Share', 
+                'Payment Frequency', 'Annual Dividend', 'Last Ex-Date', 'Next Ex-Date', 
+                'Next Payment Date', 'Dividend Yield (%)', 'Current Stock Price', 
+                'Total Investment', 'Sector', 'Notes'
+            ];
+            
+            let csvContent = '\uFEFF' + headers.join('\t') + '\n';
+            
+            // Add sample data
+            sampleData.forEach(stock => {
+                const row = [
+                    stock.symbol,
+                    stock.company,
+                    stock.shares,
+                    stock.dividendPerShare,
+                    stock.frequency,
+                    stock.annualDividend,
+                    stock.lastExDate,
+                    stock.nextExDate,
+                    stock.nextPaymentDate,
+                    stock.yield,
+                    stock.currentPrice,
+                    stock.totalInvestment,
+                    stock.sector,
+                    stock.notes
+                ];
+                csvContent += row.join('\t') + '\n';
+            });
+            
+            // Add empty rows for user input
+            for (let i = 0; i < 20; i++) {
+                csvContent += '\t\t\t\t\t\t\t\t\t\t\t\t\t' + '\n';
+            }
+            
+            const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'dividend_tracker.xlsx');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initialize the table
+        renderTable();
+    </script>
+</body>
+</html>
